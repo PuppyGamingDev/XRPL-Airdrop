@@ -1,0 +1,14 @@
+{
+	"settings": {
+		"seed": "sEd***********",
+		"airdropTotal": 100,
+		"issuer": "issueraddress",
+		"taxon": 0,
+		"name": "Collection Name",
+		"network": "wss://NETWORK"
+	},
+	"blacklist": [
+		"r*********",
+		"r*********"
+	]
+}
