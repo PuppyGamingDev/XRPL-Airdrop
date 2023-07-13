@@ -17,7 +17,7 @@ This script has been created to ease the process of airdropping XRP to holders o
 ## Configuration
 The `config.json` file contains all the settings for the script. The settings are as follows:
 - `seed` - The seed for the wallet to distribute from
-- `airdropAmount` - The amount of XRP total to distribute overall, script calculates individual shares
+- `airdropTotal` - The amount of XRP total to distribute overall, script calculates individual shares
 - `issuer` - The issuer of the Collection
 - `taxon` - The taxon of the Collection
 - `name` - Collection name that appears in transaction Memo
