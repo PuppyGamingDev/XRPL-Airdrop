@@ -1,5 +1,5 @@
 # XRPL Easy Holder Airdrops
-This script has been created to ease the process of airdropping XRP to holders of an NFT from your collection on XRPL. It will snapshot the holders, work out how much each holder is owed from the amount they hold and then distribute to them. It will also create a list of all the holders and the amount they were paid in a new file when it is finished.
+This script has been created to ease the process of airdropping XRP and XRPL Tokens to holders of an NFT from your collection on XRPL. It will snapshot the holders, work out how much each holder is owed from the amount they hold and then distribute to them. It will also create a list of all the holders and the amount they were paid in a new file when it is finished.
 
 ## Requirements
 - NodeJS	https://nodejs.org/en/download/
