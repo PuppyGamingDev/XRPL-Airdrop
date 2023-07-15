@@ -9,16 +9,28 @@ This script has been created to ease the process of airdropping XRP to holders o
 1. Download the files from this repository
 2. Open a command prompt in the folder you downloaded the files to
 3. Run `npm install` to install the required packages
-4. Edit the `config.json` file to add your details
-5. Run `node airdrop.js` to start the script
+4. Edit the `xrpconfig.json` or `tokenconfig.json` file to add your details for the airdrop type you want
+5. Run `node xrpairdrop.js` or `node tokenairdrop.js` to start the script you wish to use
 6. Wait....
 7. Complete!
 
-## Configuration
+## XRP Airdrop Configuration
 The `config.json` file contains all the settings for the script. The settings are as follows:
 - `seed` - The seed for the wallet to distribute from
 - `airdropTotal` - The amount of XRP total to distribute overall, script calculates individual shares
 - `issuer` - The issuer of the Collection
+- `taxon` - The taxon of the Collection
+- `name` - Collection name that appears in transaction Memo
+- `network` - is the RPC you will be connecting to. I DO NOT SUGGEST congesting a public network as you will most likely get ratelimited or blocked. You can get a generous one for FREE and even fairly priced tiers through [QuickNode](https://www.quicknode.com?tap_a=67226-09396e&tap_s=3536451-d11bb1&utm_source=affiliate&utm_campaign=generic&utm_content=affiliate_landing_page&utm_medium=generic)
+- `blacklist` - An array of addresses to ignore, share amounts are calculated after these addresses are removed from the total
+
+## Token Airdrop Configuration
+The `config.json` file contains all the settings for the script. The settings are as follows:
+- `seed` - The seed for the wallet to distribute from
+- `airdropTotal` - The amount of token total to distribute overall, script calculates individual shares
+- `tokenIssuer` - The issuer of the Token
+- `currencyCode` - The Currency Code
+- `nftIssuer` - The issuer of the Collection
 - `taxon` - The taxon of the Collection
 - `name` - Collection name that appears in transaction Memo
 - `network` - is the RPC you will be connecting to. I DO NOT SUGGEST congesting a public network as you will most likely get ratelimited or blocked. You can get a generous one for FREE and even fairly priced tiers through [QuickNode](https://www.quicknode.com?tap_a=67226-09396e&tap_s=3536451-d11bb1&utm_source=affiliate&utm_campaign=generic&utm_content=affiliate_landing_page&utm_medium=generic)

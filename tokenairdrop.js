@@ -1,13 +1,15 @@
-const { settings, blacklist } = require('./config.json');
+const { settings, blacklist } = require('./tokenconfig.json');
 const xrpl = require('xrpl');
 const axios = require('axios');
 const fs = require('node:fs');
+
+let client;
 
 const runAirdrop = async () => {
 	var data = null;
 	// Get the NFTs from the XRPL Services API
 	try {
-		const response = await axios.get(`https://api.xrpldata.com/api/v1/xls20-nfts/issuer/${settings.issuer}/taxon/${settings.taxon}`)
+		const response = await axios.get(`https://api.xrpldata.com/api/v1/xls20-nfts/issuer/${settings.nftIssuer}/taxon/${settings.taxon}`)
 		data = response.data.data;
 	} catch (error) {
 		console.log(`There was an error getting that collection information from the XRPL Services API`);
@@ -23,11 +25,21 @@ const runAirdrop = async () => {
 	var holders = {};
 	var holderCount = 0;
 	var splitShare = 0;
+	var checked = [];
+
+	// Get wallet from provided Seed and connect to XRPL
+	const wallet = xrpl.Wallet.fromSeed(settings.seed);
+	client = new xrpl.Client(settings.network);
+	await client.connect();
+
 	for (const n of nfts) {
 		if (blacklist.includes(n.Owner)) {
 			continue;
 		}
 		if (!holders[n.Owner]) {
+			if (checked.includes(n.Owner)) continue;
+			checked.push(n.Owner);
+			if (await checkTrustline(n.Owner) === false) continue;
 			holders[n.Owner] = 1;
 			holderCount++;
 			splitShare++;
@@ -38,22 +50,22 @@ const runAirdrop = async () => {
 	}
 	var share = settings.airdropTotal / splitShare;
 	share = share.toFixed(6);
-	console.log(`There are ${holderCount} holders of NFTs in the collection (After Blacklist removals)`);
-	console.log(`There are ${splitShare} NFTs to be divided by, meaning each NFT will receive ${share} XRP`);
+	console.log(`There are ${holderCount} holders of NFTs in the collection (After Blacklist and no TrustLine removals)`);
+	console.log(`There are ${splitShare} NFTs to be divided by, meaning each NFT will receive ${share} of ${settings.currencyCode}`);
 
-	// Get wallet from provided Seed and connect to XRPL
-	const wallet = xrpl.Wallet.fromSeed(settings.seed);
-	const client = new xrpl.Client(settings.network);
-	await client.connect();
+	
 
 	// Check the balance of the wallet to make sure it has enough to cover the airdrop
 	const account = await client.request({
-		command: "account_info",
+		command: "account_lines",
 		account: wallet.address
 	});
-	const balance = parseFloat(xrpl.dropsToXrp(account.result.account_data.Balance));
-	if (balance + (0.000012 * splitShare) <= settings.airdropTotal) {
-		console.log(`Sorry but you do not have enough to cover the airdrop. You have ${balance} XRP and need ${settings.airdropTotal} XRP with enough to cover transactions too`);
+	var balance = 0;
+	for (const line of account.result.lines) {
+		if (line.currency === settings.currencyCode) balance = parseFloat(line.balance);
+	}
+	if (balance <= settings.airdropTotal) {
+		console.log(`Sorry but you do not have enough to cover the airdrop. You have ${balance} and need ${settings.airdropTotal} ${settings.currencyCode} with enough XRP to cover transactions too`);
 		return;
 	}
 
@@ -64,14 +76,17 @@ const runAirdrop = async () => {
 	for (const [key, value] of Object.entries(holders)) {
 		var drops = value * share;
 		drops = drops.toFixed(6)
-		const dropsFormatted = xrpl.xrpToDrops(parseInt(drops));
 		payouts[key] = { held: value, share: drops, status: "pending" };
 		try {
 			const prepared = await client.autofill({
 				"TransactionType": "Payment",
 				"Account": wallet.address,
 				"Destination": key,
-				"Amount": dropsFormatted,
+				"Amount": {
+					currency: settings.currencyCode,
+					value: drops,
+					issuer: settings.tokenIssuer,
+					},
 				"Memos": [
 					{
 						"Memo": {
@@ -95,14 +110,27 @@ const runAirdrop = async () => {
 	}
 	// Disconnect from XRPL
 	await client.disconnect();
-	console.log(`Payouts completed with ${failed} failed payouts, writing output file to payouts.json`);
+	console.log(`Payouts completed with ${failed} failed payouts, writing output file to Tokenpayouts.json`);
 	// Write payout info to file
-	fs.writeFile(`./payouts.json`, JSON.stringify(payouts, null, 4), finished);
+	fs.writeFile(`./Tokenpayouts.json`, JSON.stringify(payouts, null, 4), finished);
 	function finished(err) {
 		console.log(`Finished writing file... All complete!`);
 	}
 	return;
 
 };
+
+const checkTrustline = async (wallet) => {
+    const response = await client.request({
+        command: "account_lines",
+        account: wallet,
+      });
+	  console.log(response)
+      if (response.result.lines.length < 1) return false
+      for (const line of response.result.lines) {
+          if (line.currency === settings.currencyCode) return true
+      }
+      return false
+}
 
 runAirdrop();
