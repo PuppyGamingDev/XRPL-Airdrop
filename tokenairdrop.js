@@ -58,7 +58,8 @@ const runAirdrop = async () => {
 	// Check the balance of the wallet to make sure it has enough to cover the airdrop
 	const account = await client.request({
 		command: "account_lines",
-		account: wallet.address
+		account: wallet.address,
+		ledger_index: "current"
 	});
 	var balance = 0;
 	for (const line of account.result.lines) {
@@ -124,6 +125,7 @@ const checkTrustline = async (wallet) => {
     const response = await client.request({
         command: "account_lines",
         account: wallet,
+		ledger_index: "current"
       });
 	  console.log(response)
       if (response.result.lines.length < 1) return false

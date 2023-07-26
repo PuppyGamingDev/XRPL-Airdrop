@@ -49,7 +49,8 @@ const runAirdrop = async () => {
 	// Check the balance of the wallet to make sure it has enough to cover the airdrop
 	const account = await client.request({
 		command: "account_info",
-		account: wallet.address
+		account: wallet.address,
+		ledger_index: "current"
 	});
 	const balance = parseFloat(xrpl.dropsToXrp(account.result.account_data.Balance));
 	if (balance + (0.000012 * splitShare) <= settings.airdropTotal) {
